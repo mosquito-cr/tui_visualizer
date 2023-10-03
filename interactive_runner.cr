@@ -1,5 +1,4 @@
 require "mosquito"
-require "./src/monkeys/*"
 
 Mosquito.configure do |settings|
   settings.redis_url = (ENV["REDIS_URL"]? || "redis://localhost:6379")
@@ -16,10 +15,15 @@ class ShortLivedRunner < Mosquito::Runner
   def start
     @run_start = Time.utc
 
+    run
+
     loop do
-      return unless keep_running?
-      run
+      sleep 1
+
+      break unless keep_running?
     end
+
+    stop
   end
 
   def current_run_length

@@ -6,7 +6,6 @@
 
 require "keimeno"
 require "./interface/*"
-require "./interface/inspector_addons/*"
 
 class MosquitoInterface < Keimeno::Base
   @queues : Array(Mosquito::Inspector::Queue)
@@ -57,7 +56,7 @@ class MosquitoInterface < Keimeno::Base
 
       {% for name in ["scheduled", "waiting", "pending", "dead"] %}
         s += {{ name }}[0].upcase
-        s += queue.{{name.id}}_tasks.size.to_s
+        s += queue.{{name.id}}_job_runs.size.to_s
         s += ' '
       {% end %}
 

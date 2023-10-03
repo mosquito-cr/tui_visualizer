@@ -1,8 +1,6 @@
 require "mosquito"
 require "keimeno"
 
-require "./src/monkeys/*"
-require "./src/inspector"
 require "./src/interface"
 
 Mosquito.configure do |settings|
