@@ -2,15 +2,31 @@ require "mosquito"
 
 Mosquito.configure do |settings|
   settings.redis_url = (ENV["REDIS_URL"]? || "redis://localhost:6379")
-  # settings.run_from = ["default"]
+  settings.run_cron_scheduler = false
+  settings.use_distributed_lock = true
 end
 
-Log.setup(:debug)
+struct InteractiveLogStreamFormatter < Log::StaticFormatter
+  def run
+    severity
+    string " "
+    source
+    string " "
+    message
+  end
+end
+
+formatted_backend = Log::IOBackend.new(formatter: InteractiveLogStreamFormatter)
+
+Log.setup(:debug, formatted_backend)
+Log.setup("redis.connection.*", :warn, formatted_backend)
+Log.setup("mosquito.*", :info, formatted_backend)
 
 class ShortLivedRunner < Mosquito::Runner
   @run_start : Time = Time::UNIX_EPOCH
   property run_duration = 3.seconds
   property run_forever = false
+  property keep_running = true
 
   def start
     @run_start = Time.utc
@@ -26,12 +42,21 @@ class ShortLivedRunner < Mosquito::Runner
     stop
   end
 
+  def stop
+    self.keep_running = false
+    super
+  end
+
   def current_run_length
     Time.utc - @run_start
   end
 
   def keep_running?
-    run_forever || current_run_length < @run_duration
+    if run_forever
+      self.keep_running
+    else
+      self.keep_running && current_run_length < @run_duration
+    end
   end
 end
 
@@ -51,7 +76,7 @@ class EveryThreeSecondsJob < Mosquito::PeriodicJob
   end
 end
 
-runner = ShortLivedRunner.new
+cli_arg = ARGV[0]?
 
 loop do
   count = 10
@@ -66,7 +91,8 @@ loop do
   Choose: 
   MENU
 
-  choice = gets
+  choice = cli_arg || gets
+  cli_arg = nil
 
   next if choice.nil?
 
@@ -78,6 +104,7 @@ loop do
   when "2"
     puts "Running worker for #{duration.seconds} seconds."
 
+    runner = ShortLivedRunner.new
     runner.run_forever = false
     runner.run_duration = duration
     runner.start
@@ -90,8 +117,17 @@ loop do
 
   when "4"
     puts "Running worker indefinitely."
+
+    runner = ShortLivedRunner.new
     runner.run_forever = true
+
+    Signal::INT.trap do
+      runner.stop
+      Signal::INT.reset
+    end
+
     runner.start
+    break
 
   else
     puts "Invalid choice"

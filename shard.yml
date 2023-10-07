@@ -10,3 +10,7 @@ dependencies:
     path: ../mosquito
   keimeno:
     github: robacarp/keimeno
+  kemal:
+    github: kemalcr/kemal
+  fswatch:
+    github: bcardiff/crystal-fswatch
