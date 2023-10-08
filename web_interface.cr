@@ -43,7 +43,7 @@ ws "/hot_reload" do |socket|
 end
 
 event_stream = Mosquito::Inspector.event_receiver
-event_stream_clients = Dispatcher.new(event_stream)
+event_stream_clients = Dispatcher(String).new(event_stream)
 
 ws "/events" do |socket|
   my_channel = event_stream_clients.allocate
