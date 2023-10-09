@@ -1,11 +1,13 @@
 "use strict";
 
-export default class HotReload {
+class HotReloader {
   constructor(path) {
     this.path = path
     this.reloadTimeout = null
     this.socket = null
     this.hasBeenConnected = false
+
+    this.connect()
   }
 
   async connect() {
@@ -36,6 +38,7 @@ export default class HotReload {
       this.hasBeenConnected = true
       this.socket.onmessage = this.onmessage.bind(this)
       this.socket.onclose = this.onclose.bind(this)
+      this.socket.onerror = this.onerror.bind(this)
     } else {
       console.log("hot reload failed to connect :(")
       setTimeout(this.connect.bind(this), 100)
@@ -50,7 +53,11 @@ export default class HotReload {
 
   onmessage(e) {
     clearTimeout(this.reloadTimeout)
-    this.reloadTimeout = setTimeout(this.reload, 300)
+    this.reloadTimeout = setTimeout(this.reload, 100)
+  }
+
+  onerror (e) {
+    console.log('hot reload socket error', e)
   }
 
   reload() {
@@ -58,3 +65,6 @@ export default class HotReload {
     location.reload()
   }
 }
+
+const HotReload = (path) => new HotReloader(path)
+export default HotReload

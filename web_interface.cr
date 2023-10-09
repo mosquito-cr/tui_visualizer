@@ -2,26 +2,32 @@ require "kemal"
 require "fswatch"
 require "mosquito"
 
-class Dispatcher(T)
-  @output = [] of Channel(T)
+class SocketBroadcaster
+  @outputs = [] of HTTP::WebSocket
 
-  def initialize(@input : Channel(T))
-  end
+  delegate size, to: @outputs
 
-  def initialize()
-    @input = Channel(T).new
-  end
-
-  def allocate
-    Channel(T).new.tap {|c| @output << c }
-  end
-
-  def release(c)
-    @output.delete(c)
+  def initialize
   end
 
   def broadcast(message)
-    @output.each(&.send message)
+    @outputs.each do |output|
+      output.send message
+    end
+  end
+
+  def register(output : HTTP::WebSocket)
+    @outputs << output
+    output.on_close { @outputs.delete output }
+  end
+end
+
+class EventStream < SocketBroadcaster
+  def register(output : HTTP::WebSocket)
+    super
+    output.on_message do |message|
+      output.send "pong" if message == "ping"
+    end
   end
 end
 
@@ -29,32 +35,35 @@ get "/" do
   File.read("public/index.html")
 end
 
-
-hot_reload = Dispatcher(String).new
+hot_reload = SocketBroadcaster.new
 
 FSWatch.watch "." do |event|
   hot_reload.broadcast("hot reload")
 end
 
-ws "/hot_reload" do |socket|
-  my_channel = hot_reload.allocate
-  socket.on_close { hot_reload.release my_channel }
-  loop { socket.send my_channel.receive }
+ws "/hot-reload" do |socket|
+  hot_reload.register socket
 end
 
 event_stream = Mosquito::Inspector.event_receiver
-event_stream_clients = Dispatcher(String).new(event_stream)
+event_stream_clients = EventStream.new
+
+def message_formatter(message : Mosquito::Backend::BroadcastMessage) : String
+ {
+   :channel => message.channel,
+   :message => message.message
+ }.to_json
+end
+
+spawn do
+  loop do
+    message = event_stream.receive
+    event_stream_clients.broadcast message_formatter(message)
+  end
+end
 
 ws "/events" do |socket|
-  my_channel = event_stream_clients.allocate
-  puts "client connected to /events socket... "
-
-  socket.on_close do
-    event_stream_clients.release my_channel
-    puts "client disconnected from /events socket... "
-  end
-
-  loop { socket.send my_channel.receive }
+  event_stream_clients.register socket
 end
 
 Kemal.run
