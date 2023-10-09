@@ -5,6 +5,8 @@ class MosquitoEventStream {
     this.path = path
     this.socket = null
     this.connect()
+
+    this.messagesDiv = document.getElementById("messages")
   }
 
   connect() {
@@ -21,9 +23,8 @@ class MosquitoEventStream {
 
   onopen(e) { }
   onmessage(e) {
-    // console.log("event stream message")
-    // console.dir(e)
-    //
+    this.messagesDiv.innerHTML += e.data + "<br>"
+    this.messagesDiv.scrollTop = this.messagesDiv.scrollHeight
   }
   onerror(e) {
     console.log("event stream error")
