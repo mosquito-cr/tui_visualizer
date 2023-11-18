@@ -26,7 +26,34 @@ class EventStream < SocketBroadcaster
   def register(output : HTTP::WebSocket)
     super
     output.on_message do |message|
-      output.send "pong" if message == "ping"
+      message_received(output, message)
+    end
+  end
+
+  def message_received(socket : HTTP::WebSocket, message : String)
+    case message
+    when "ping"
+      socket.send({ type: "pong" }.to_json)
+    when "list-queues"
+      socket.send({
+        type: "list-queues",
+        queues: Mosquito::Inspector.list_queues.map(&.name)
+      }.to_json)
+    when "list-overseers"
+      socket.send({
+        type: "list-overseers",
+        overseers: Mosquito::Inspector.list_runners.map(&.name)
+      }.to_json)
+    when /queue\((.*)\)/
+      name = $~[1]
+      queue = Mosquito::Inspector.queue(name)
+
+      socket.send({
+        type: "queue-detail",
+        queue: { name: name, sizes: queue.sizes }
+      }.to_json)
+    else
+      Log.error { "Unknown message received: #{message}" }
     end
   end
 end
@@ -48,11 +75,12 @@ end
 event_stream = Mosquito::Inspector.event_receiver
 event_stream_clients = EventStream.new
 
-def message_formatter(message : Mosquito::Backend::BroadcastMessage) : String
- {
-   :channel => message.channel,
-   :message => message.message
- }.to_json
+def message_formatter(broadcast : Mosquito::Backend::BroadcastMessage) : String
+  {
+    type: "broadcast",
+    channel: broadcast.channel,
+    message: JSON.parse(broadcast.message)
+  }.to_json
 end
 
 spawn do

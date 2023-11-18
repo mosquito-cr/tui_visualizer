@@ -1,0 +1,22 @@
+:root {
+  --background-color: #dddddd;
+  --text-color: #333333;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #333333;
+    --text-color: #dddddd;
+  }
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: sans-serif;
+}
+
+mosquito-message-stream {
+  height: 28vh;
+  border: 1px solid black;
+}

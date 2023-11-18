@@ -5,7 +5,7 @@
 # └───┘
 
 require "keimeno"
-require "./interface/*"
+require "./tui_interface/*"
 
 class MosquitoInterface < Keimeno::Base
   @queues : Array(Mosquito::Inspector::Queue)

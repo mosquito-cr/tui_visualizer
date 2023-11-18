@@ -1,12 +1,12 @@
 "use strict";
 
-class MosquitoEventStream {
+export default class EventStream {
   constructor(path) {
     this.path = path
     this.socket = null
     this.connect()
 
-    this.messagesDiv = document.getElementById("messages")
+    this.callbacks = {}
   }
 
   connect() {
@@ -21,20 +21,57 @@ class MosquitoEventStream {
     }, {passive: true})
   }
 
-  onopen(e) { }
   onmessage(e) {
-    this.messagesDiv.innerHTML += e.data + "<br>"
-    this.messagesDiv.scrollTop = this.messagesDiv.scrollHeight
+    const parsed = JSON.parse(e.data)
+    this.dispatchCallbacks("message", parsed)
+    this.routeMessage(parsed)
   }
+
+  routeMessage(message) {
+    switch (message.type) {
+      case "list-queues":
+        this.dispatchCallbacks("list-queues", message.queues)
+        break
+      case "list-overseers":
+        this.dispatchCallbacks("list-overseers", message.overseers)
+        break
+
+      case "queue-detail":
+        this.dispatchCallbacks("queue-detail", message)
+        break
+
+      case "broadcast":
+        this.dispatchCallbacks("broadcast", message)
+        break
+    }
+  }
+
   onerror(e) {
     console.log("event stream error")
     console.dir(e)
   }
-  onclose(e) {
-    // console.log("event stream closed")
-    // console.dir(e)
-  }
-}
 
-const EventStream = (path) => new MosquitoEventStream(path)
-export default EventStream
+  onopen(e) {
+    this.dispatchCallbacks("ready", null)
+  }
+
+  onclose(e) { }
+
+  on(response, callback) {
+    if (undefined === this.callbacks[response]) {
+      this.callbacks[response] = []
+    }
+
+    this.callbacks[response].push(callback)
+  }
+
+  dispatchCallbacks(eventName, payload) {
+    // console.log(`dispatching callbacks for ${eventName}`)
+    if (! this.callbacks[eventName]) return
+    this.callbacks[eventName].forEach(callback => callback(payload))
+  }
+
+  listQueues() { this.socket.send("list-queues") }
+  listOverseers() { this.socket.send("list-overseers") }
+  queueDetail(name) { this.socket.send(`queue(${name})`) }
+}

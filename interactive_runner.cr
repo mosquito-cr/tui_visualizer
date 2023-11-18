@@ -4,6 +4,7 @@ Mosquito.configure do |settings|
   settings.redis_url = (ENV["REDIS_URL"]? || "redis://localhost:6379")
   settings.run_cron_scheduler = false
   settings.use_distributed_lock = true
+  settings.send_metrics = true
 end
 
 struct InteractiveLogStreamFormatter < Log::StaticFormatter
@@ -13,14 +14,17 @@ struct InteractiveLogStreamFormatter < Log::StaticFormatter
     source
     string " "
     message
+    string " "
+    data
   end
 end
 
 formatted_backend = Log::IOBackend.new(formatter: InteractiveLogStreamFormatter)
 
-Log.setup(:debug, formatted_backend)
-Log.setup("redis.connection.*", :warn, formatted_backend)
-Log.setup("mosquito.*", :info, formatted_backend)
+Log.setup do |logger|
+  logger.bind "*",:info, formatted_backend
+  # logger.bind "redis.connection.*", :info, formatted_backend
+end
 
 class ShortLivedRunner < Mosquito::Runner
   @run_start : Time = Time::UNIX_EPOCH
@@ -62,8 +66,8 @@ end
 
 class LongJob < Mosquito::QueuedJob
   def perform
-    log "It only takes me 1 second to do this"
-    sleep 1
+    log "It only takes me 3 second to do this"
+    sleep 3
   end
 end
 
@@ -79,7 +83,7 @@ end
 cli_arg = ARGV[0]?
 
 loop do
-  count = 10
+  count = 1000
   duration = 3.seconds
 
   print <<-MENU
