@@ -20,7 +20,7 @@ export default class Executor extends BaseComponent {
   }
 
   connectedCallback() {
-    this.idTag.textContent = this.dataset.id
+    this.idTag.textContent = `Executor<${this.dataset.id.slice(-6)}>`
   }
 
   message(message) {

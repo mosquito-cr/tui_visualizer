@@ -17,14 +17,25 @@ export default class Overseer extends BaseComponent {
     this.attachCSS()
 
     this.executors = []
+    this.busyExecutors = []
   }
 
   connectedCallback() {
-    this.idTag.textContent = this.dataset.id
+    this.idTag.textContent = `Overseer<${this.dataset.id.slice(-6)}>`
+  }
+
+  updateSummary() {
+    this.summaryTag.textContent = `${this.busyExecutors.length}/${this.executors.length} busy`
+    if (this.summaryTag.classList.contains('hidden'))
+      this.summaryTag.classList.remove('hidden')
   }
 
   get idTag() {
     return this.shadowRoot.getElementById('id')
+  }
+
+  get summaryTag() {
+    return this.shadowRoot.getElementById('summary')
   }
 
   fetchExecutor(id) {
@@ -39,6 +50,20 @@ export default class Overseer extends BaseComponent {
   dispatchExecutorMessage(executorId, message) {
     const executor = this.fetchExecutor(executorId)
     executor.message(message)
+
+    switch(message.event) {
+      case "starting":
+        if (! this.busyExecutors.includes(executorId))
+          this.busyExecutors.push(executorId)
+        break
+      case "job-finished":
+        const index = this.busyExecutors.indexOf(executorId)
+        if (index > -1)
+          this.busyExecutors.splice(index, 1)
+        break
+    }
+
+    this.updateSummary()
   }
 }
 

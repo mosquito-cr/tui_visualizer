@@ -46,7 +46,7 @@ eventStream.on("broadcast", event => {
 })
 
 function dispatchOverseerMessage(channel, message) {
-  console.log(message)
+  // console.log(message)
 }
 
 function dispatchOverseerSubMessage(channel, message) {

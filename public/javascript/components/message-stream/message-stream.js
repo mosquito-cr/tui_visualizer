@@ -48,7 +48,15 @@ export default class MessageStream extends BaseComponent {
   // Event Responders
   messageReceived(message) {
     if (! this.streamMessages) return
-    this.elem("#messages").textContent += JSON.stringify(message) + "\n"
+    const messagesDiv = this.elem("#messages")
+    let lines = messagesDiv.textContent.split("\n")
+    lines.push(JSON.stringify(message))
+
+    if (lines.length > 50) {
+      lines.shift()
+    }
+
+    messagesDiv.textContent = lines.join("\n")
     this.tryFirstScroll()
   }
 

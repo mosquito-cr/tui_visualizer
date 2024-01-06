@@ -27,17 +27,12 @@ export default class Queue extends BaseComponent {
   broadcastMessageReceived(message) {
     switch (message.title) {
       case "enqueue-job":
-        this.depth ++
-        break
       case "dequeue":
-        this.depth --
+        this.depth = message.depth || this.depth
         break
       default:
         console.log(`unknown message ${message.title}`, message)
     }
-
-    if (this.depth < 0)
-      this.depth = 0
 
     this.depthTag.textContent = this.depth
   }

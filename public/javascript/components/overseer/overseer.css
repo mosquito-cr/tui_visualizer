@@ -1,3 +1,8 @@
 #executors {
   margin-left: 1rem;
 }
+
+#header {
+  display: flex;
+  gap: 1rem;
+}
