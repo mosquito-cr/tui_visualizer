@@ -6,8 +6,24 @@
     <link rel="stylesheet" href="/stylesheets/app.css">
   </head>
   <body>
-    <mosquito-message-stream></mosquito-message-stream>
-    <mosquito-queue-list id="queues"></mosquito-queue-list  >
-    <mosquito-overseer-list id="overseers"></mosquito-overseer-list>
+    <h1>Mosquito Dashboard</h1>
+
+    <div id="tabs">
+      <a href="" data-tab-target="queues" class="active">Queues</a>
+      <a href="" data-tab-target="overseers">Overseers</a>
+      <a href="" data-tab-target="messages">Messages</a>
+    </div>
+
+    <div id="tab-content">
+      <div id="queues" class="active">
+        <mosquito-queue-list></mosquito-queue-list>
+      </div>
+      <div id="messages">
+        <mosquito-message-stream></mosquito-message-stream>
+      </div>
+      <div id="overseers">
+        <mosquito-overseer-list></mosquito-overseer-list>
+      </div>
+    </div>
   </body>
 </html>

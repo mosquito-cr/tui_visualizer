@@ -10,7 +10,6 @@ html {
 }
 
 body {
-  background-color: red;
   height: inherit;
   margin: 0;
 }
@@ -34,14 +33,4 @@ body {
   font-family: monospace;
   line-height: 1.5rem;
   padding: 0.25rem;
-}
-
-#controls {
-  position: fixed;
-  background-color: white;
-  padding: 0.5rem;
-}
-
-#controls label {
-  width: 100%;
 }

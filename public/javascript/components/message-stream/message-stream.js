@@ -31,7 +31,7 @@ export default class MessageStream extends BaseComponent {
 
   async checkIfScrolledToBottom() {
     const atBottom = await this.isScrolledToBottom()
-    this.elem("#scroll-to-bottom").checked = atBottom
+    // this.elem("#scroll-to-bottom").checked = atBottom
   }
 
   connectedCallback() {
@@ -40,9 +40,8 @@ export default class MessageStream extends BaseComponent {
       this.scrollEventTimeout = setTimeout(this.checkIfScrolledToBottom.bind(this), 50)
     })
 
-    this.elem("#scroll-to-bottom").addEventListener("change", this.scrollToBottomChanged.bind(this))
-    this.elem("#start-stop").addEventListener("click", this.startStopClicked.bind(this))
-    this.setStartStopText()
+    // this.elem("#scroll-to-bottom").addEventListener("change", this.scrollToBottomChanged.bind(this))
+    // this.elem("#start-stop").addEventListener("click", this.startStopClicked.bind(this))
   }
 
   // Event Responders
@@ -86,20 +85,12 @@ export default class MessageStream extends BaseComponent {
 
     const currentScroll = this.elem("#scroller").scrollTop
     this.scrollToBottom()
-    if (currentScroll != this.elem("#scroller").scrollTop) {
+    if (currentScroll != this.elem("#scroller").scrollTop)
       this.firstScroll = false
-    }
   }
 
   scrollToBottom() {
     this.elem("#scroll-anchor").scrollIntoView()
-  }
-
-  setStartStopText() {
-    if (this.streamMessages)
-      this.elem("#start-stop").innerText = this.elem("#start-stop").dataset.textWhileStarted 
-    else
-      this.elem("#start-stop").innerText = this.elem("#start-stop").dataset.textWhileStopped
   }
 }
 

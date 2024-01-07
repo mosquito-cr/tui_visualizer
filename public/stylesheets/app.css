@@ -1,12 +1,14 @@
 :root {
-  --background-color: #dddddd;
+  --background-color: #ffffff;
   --text-color: #333333;
+  --active-tab-color: #666666;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background-color: #333333;
     --text-color: #dddddd;
+    --active-tab-color: #dddddd;
   }
 }
 
@@ -17,6 +19,41 @@ body {
 }
 
 mosquito-message-stream {
-  height: 28vh;
-  border: 1px solid black;
+  height: 56vh;
+}
+
+#tabs {
+  display: flex;
+  gap: 1rem;
+  padding-left: 1rem;
+}
+
+#tabs > * {
+  display: block;
+  padding: 0.75rem 1.25rem;
+  color: black;
+  border: 1px 1px 0px solid #dddddd;
+  border-radius: 3px 3px 0px 0px;
+  background-color: #999999;
+  color: var(--background-color);
+}
+
+#tabs .active {
+  color: white;
+  color: var(--background-color);
+  background-color: var(--active-tab-color);
+}
+
+#tab-content {
+  display: flex;
+  border: 1px solid #dddddd;
+}
+
+#tab-content > * {
+  display: none;
+  margin: 1rem;
+}
+
+#tab-content .active {
+  display: block;
 }
