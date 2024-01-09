@@ -51,6 +51,7 @@ mosquito-message-stream {
 
 #tab-content > * {
   display: none;
+  width: 100%;
   margin: 1rem;
 }
 

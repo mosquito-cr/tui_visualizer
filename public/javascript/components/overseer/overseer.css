@@ -1,8 +1,50 @@
-#executors {
-  margin-left: 1rem;
+:host {
+  display: block;
+  width: 100%;
+}
+
+body {
+  width: 100%;
 }
 
 #header {
   display: flex;
   gap: 1rem;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid black;
+  padding: 0.5rem;
+}
+
+tbody > tr:nth-child(even of .executor-row) {
+  background-color: #dddddd;
+}
+
+.executor-id {
+  width: 20%;
+}
+
+.jps {
+  width: 20%;
+}
+
+tr.progress-row td {
+  padding: 0;
+}
+
+.progress-bar {
+  height: 0.25rem;
+  width: 100%;
+  background-color: #aaaaaa;
 }

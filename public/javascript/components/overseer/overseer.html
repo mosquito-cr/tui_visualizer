@@ -1,4 +1,28 @@
 <div id="header">
   <span id="id"></span><span id="summary" class="hidden"></span>
 </div>
-<div id="executors"></div>
+
+<div class="container">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Current Job</th>
+      </tr>
+    </thead>
+    <tbody id="executors"></tbody>
+  </table>
+</div>
+
+<template id="executor">
+  <tr class="executor-row">
+    <td class="executor-id"></td>
+    <td class="working-on"></td>
+  </tr>
+
+  <tr class="progress-row">
+    <td colspan="3">
+      <div class="progress-bar"></div>
+    </td>
+  </tr>
+</template>

@@ -12,7 +12,6 @@ import Queue from "./components/queue/queue.js"
 import QueueList from "./components/queue-list/queue-list.js"
 import Overseer from "./components/overseer/overseer.js"
 import OverseerList from "./components/overseer-list/overseer-list.js"
-import Executor from "./components/executor/executor.js"
 import MessageStream from "./components/message-stream/message-stream.js"
 
 const messageStream = document.querySelector("mosquito-message-stream")
