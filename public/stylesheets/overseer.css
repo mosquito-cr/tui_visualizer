@@ -1,43 +1,29 @@
-:host {
+.overseer {
   display: block;
   width: 100%;
 }
 
-body {
-  width: 100%;
-  --primary-color: #465298;
-  --secondary-color: #606dbc;
-}
-
-#header {
+.overseer > h3 {
   display: flex;
   gap: 1rem;
 }
 
-.container {
-  width: 100%;
-  display: flex;
-}
-
-table {
+.overseer table.executors {
   border-collapse: collapse;
   width: 100%;
 }
 
-td, th {
+table.executors td,
+table.executors th {
   border: 1px solid black;
   padding: 0.5rem;
 }
 
-tbody > tr:nth-child(even of .executor-row) {
+table.excecutors tbody tr:nth-child(even of .executor-row) {
   background-color: #dddddd;
 }
 
 .executor-id {
-  width: 20%;
-}
-
-.jps {
   width: 20%;
 }
 

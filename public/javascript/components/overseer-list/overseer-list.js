@@ -20,25 +20,6 @@ export default class OverseerList extends BaseComponent {
 
     this.list = this.shadowRoot.querySelector("#overseers")
   }
-
-  update(overseers) {
-    overseers.forEach(overseer_id => this.fetchChild(overseer_id))
-  }
-
-  fetchChild(id) {
-    const child = this.childNest.find(child => child.dataset.id === id)
-    if (child) return child
-    const tag = Builder.tag('mosquito-overseer', {dataset: {id}})
-    this.childNest.push(tag)
-    this.list.appendChild(tag)
-
-    return tag
-  }
-
-  dispatchExecutorMessage(overseerId, executorId, message) {
-    this.fetchChild(overseerId)
-        .dispatchExecutorMessage(executorId, message)
-  }
 }
 
 customElements.define('mosquito-overseer-list', OverseerList)

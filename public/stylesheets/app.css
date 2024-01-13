@@ -2,6 +2,8 @@
   --background-color: #ffffff;
   --text-color: #333333;
   --active-tab-color: #666666;
+  --primary-color: #465298;
+  --secondary-color: #7a89ef;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -32,7 +34,8 @@ mosquito-message-stream {
   display: block;
   padding: 0.75rem 1.25rem;
   color: black;
-  border: 1px 1px 0px solid #dddddd;
+  border: 1px solid #dddddd;
+  border-bottom-width: 0px;
   border-radius: 3px 3px 0px 0px;
   background-color: #999999;
   color: var(--background-color);

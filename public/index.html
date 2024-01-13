@@ -4,6 +4,7 @@
     <title>Mosquito Dashboard</title>
     <script type="module" src="/javascript/app.js"></script>
     <link rel="stylesheet" href="/stylesheets/app.css">
+    <link rel="stylesheet" href="/stylesheets/overseer.css">
   </head>
   <body>
     <h1>Mosquito Dashboard</h1>
@@ -22,8 +23,38 @@
         <mosquito-message-stream></mosquito-message-stream>
       </div>
       <div id="overseers">
-        <mosquito-overseer-list></mosquito-overseer-list>
       </div>
     </div>
+
+    <template id="overseer">
+      <div class="overseer">
+        <h3>
+          <span class="overseer-id"></span><span class="summary" class="hidden"></span>
+        </h3>
+
+        <table class="executors">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Current Job</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </template>
+
+    <template id="executor">
+      <tr class="executor-row">
+        <td class="executor-id"></td>
+        <td class="working-on"></td>
+      </tr>
+
+      <tr class="progress-row">
+        <td colspan="3">
+          <div class="progress-bar"></div>
+        </td>
+      </tr>
+    </template>
   </body>
 </html>

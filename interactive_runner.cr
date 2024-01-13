@@ -24,6 +24,7 @@ formatted_backend = Log::IOBackend.new(formatter: InteractiveLogStreamFormatter)
 Log.setup do |logger|
   logger.bind "*",:info, formatted_backend
   # logger.bind "redis.connection.*", :info, formatted_backend
+  logger.bind "mosquito.redis_backend", :debug, formatted_backend
 end
 
 class ShortLivedRunner < Mosquito::Runner
@@ -80,6 +81,20 @@ class EveryThreeSecondsJob < Mosquito::PeriodicJob
   end
 end
 
+class RandomLengthJob < Mosquito::QueuedJob
+  def perform
+    length_of_time = Random.rand(10)
+    log "running for #{length_of_time} seconds"
+    sleep length_of_time
+  end
+end
+
+class FastJob < Mosquito::QueuedJob
+  def perform
+    log "I'm running fast"
+  end
+end
+
 cli_arg = ARGV[0]?
 
 loop do
@@ -87,9 +102,9 @@ loop do
   duration = 3.seconds
 
   print <<-MENU
-  1. Enqueue a job
-  2. Run worker for #{duration.seconds} seconds
-  3. Enqueue #{count} jobs
+  1. Enqueue 100 random length jobs (1-10s ea)
+  2. 100_000 fast jobs (~instantaneous)
+  3. Enqueue #{count} long jobs
   4. Run worker indefinitely
 
   Choose: 
@@ -102,22 +117,16 @@ loop do
 
   case choice.chomp
   when "1"
-    puts "Enqueuing a three second job."
-    LongJob.new.enqueue
+    puts "Enqueuing 100 random length jobs."
+    100.times { RandomLengthJob.new.enqueue }
 
   when "2"
-    puts "Running worker for #{duration.seconds} seconds."
-
-    runner = ShortLivedRunner.new
-    runner.run_forever = false
-    runner.run_duration = duration
-    runner.start
+    puts "Enqueuing 100_000 fast jobs."
+    100_000.times { FastJob.new.enqueue }
 
   when "3"
     puts "Enqueuing #{count} jobs."
-    count.times do
-      LongJob.new.enqueue
-    end
+    count.times { LongJob.new.enqueue }
 
   when "4"
     puts "Running worker indefinitely."

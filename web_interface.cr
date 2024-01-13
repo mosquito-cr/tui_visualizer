@@ -42,7 +42,7 @@ class EventStream < SocketBroadcaster
     when "list-overseers"
       socket.send({
         type: "list-overseers",
-        overseers: Mosquito::Inspector.list_runners.map(&.name)
+        overseers: Mosquito::Inspector.list_overseers.map(&.name)
       }.to_json)
     when /queue\((.*)\)/
       name = $~[1]
