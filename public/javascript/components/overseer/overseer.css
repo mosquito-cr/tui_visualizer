@@ -5,6 +5,8 @@
 
 body {
   width: 100%;
+  --primary-color: #465298;
+  --secondary-color: #606dbc;
 }
 
 #header {
@@ -44,7 +46,27 @@ tr.progress-row td {
 }
 
 .progress-bar {
-  height: 0.25rem;
+  height: .25rem;
   width: 100%;
-  background-color: #aaaaaa;
+  background-color: #465298;
+}
+
+.progress-bar.spin {
+  background-image: 
+    repeating-linear-gradient(
+      -45deg, 
+      var(--primary-color),
+      var(--primary-color) 1rem,
+      var(--secondary-color) 1rem,
+      var(--secondary-color) 2rem
+    );
+  background-position: 100% 100%;
+  background-size: 200% 200%;
+  animation: barberpole 10s linear infinite;
+}
+
+@keyframes barberpole {
+  100% {
+    background-position: 0% 0%;
+  }
 }
