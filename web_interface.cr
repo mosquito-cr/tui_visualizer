@@ -65,6 +65,7 @@ end
 hot_reload = SocketBroadcaster.new
 
 FSWatch.watch "." do |event|
+  next if /\.git/ =~ event.path
   hot_reload.broadcast("hot reload")
 end
 
