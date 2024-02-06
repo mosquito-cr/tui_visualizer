@@ -24,27 +24,39 @@ export default class Executor {
     this.timeout = null
   }
 
+  get job() { return this._job }
+  set job(value) { this._job = value }
+
+  get queue() { return this._queue }
+  set queue(value) { this._queue = value }
+
   set progress(value) {
     const progressBar = this.progressRow.querySelector('.progress-bar')
     progressBar.style.width = value + '%'
+    this.spin = value >= 100
+  }
 
-    if (value >= 100) {
-      progressBar.classList.add('spin')
-    } else {
-      progressBar.classList.remove('spin')
-    }
+  set spin(value) {
+    if (value)
+      this.progressRow.querySelector('.progress-bar').classList.add('spin')
+    else
+      this.progressRow.querySelector('.progress-bar').classList.remove('spin')
   }
 
   onMessage(channel, message) {
     switch(message.event) {
       case "starting":
         this.busy = true
+        this.job = message.job_run
+        this.queue = message.from_queue
         this.startWorkAnimation(message)
 
         break
 
       case "job-finished":
         this.busy = false
+        this.job = null
+        this.queue = null
         this.stopWorkAnimation(message)
 
         break
@@ -56,9 +68,17 @@ export default class Executor {
     clearInterval(this.timeout)
   }
 
+  updateStatus() {
+    if (this.job) {
+      this.detailsRow.querySelector(".working-on").textContent = this.queue + ": " + this.job
+    } else   {
+      this.detailsRow.querySelector(".working-on").textContent = "idle"
+    }
+  }
+
   startWorkAnimation(workDetails) {
     this.clearRefreshTimers()
-    this.detailsRow.querySelector(".working-on").textContent = workDetails.from_queue + ": " + workDetails.job_run
+    this.updateStatus()
 
     const progressIncrement = 100 / (workDetails.expected_duration_ms / this.constructor.animationFrameLength)
 
@@ -79,7 +99,7 @@ export default class Executor {
     // that a new job would be assigned if it existed.
     this.timeout = setTimeout(() => {
       this.progress = 0
-      this.detailsRow.querySelector(".working-on").textContent = "idle"
+      this.updateStatus()
     }, 40)
   }
 }

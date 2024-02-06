@@ -29,17 +29,6 @@ export default class EventStream {
 
   routeMessage(message) {
     switch (message.type) {
-      case "list-queues":
-        this.dispatchCallbacks("list-queues", message.queues)
-        break
-      case "list-overseers":
-        this.dispatchCallbacks("list-overseers", message.overseers)
-        break
-
-      case "queue-detail":
-        this.dispatchCallbacks("queue-detail", message)
-        break
-
       case "broadcast":
         this.dispatchCallbacks("broadcast", message)
         break

@@ -42,10 +42,13 @@ eventStream.on("list-queues", queues => {
 })
 
 eventStream.on("list-overseers", overseers => {
-  console.log(overseers)
-  // Overseer.update(overseers)
+  overseers.forEach(overseerId => {
+    overseerNest.findOrHatch(overseerId)
+  })
 })
-eventStream.on("message", message => messageStream.messageReceived(message))
+
+// eventStream.on("message", message => messageStream.messageReceived(message))
+
 eventStream.on("queue-detail", message => {
   queueList.updateDetails(message.queue.name, message.queue)
 })
@@ -62,15 +65,39 @@ eventStream.on("broadcast", event => {
   }
 })
 
-eventStream.on("ready", () => {
-  eventStream.listQueues()
-  eventStream.listOverseers()
-})
-
-
 function dispatchQueueMessage(channel, message) {
   const queueName = channel[2]
   queueList.dispatchMessage(queueName, message)
+}
+
+async function fetchOverseers() {
+  fetch("/overseers")
+  .then(response => response.json())
+  .then(({overseers}) => {
+    overseers.forEach(overseerId => {
+      overseerNest.findOrHatch(overseerId)
+      fetchOverseerExecutors(overseerId)
+    })
+  }).catch(error => console.error(error))
+}
+
+async function fetchOverseerExecutors(overseerId) {
+  fetch(`/overseers/${overseerId}/executors`)
+  .then(response => response.json())
+  .then(({executors}) => {
+    executors.forEach(executor => {
+      const executorElement = overseerNest.findOrHatch(overseerId).executorNest.findOrHatch(executor.id)
+      if (executor.current_job != null) {
+        executorElement.spin = true
+        executorElement.job = executor.current_job
+        executorElement.queue = executor.current_job_queue
+        executorElement.progress = 100
+      } else {
+        executorElement.progress = 0
+      }
+      executorElement.updateStatus()
+    })
+  }).catch(error => console.error(error))
 }
 
 function go() {
@@ -78,6 +105,8 @@ function go() {
   const tabContent = document.querySelector("#tab-content")
   const rootTabs = new TabManager(tabs, tabContent)
   rootTabs.manageHistory = true
+
+  fetchOverseers()
 }
 
 if (document.readyState === "loading")

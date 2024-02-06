@@ -2,6 +2,17 @@ require "kemal"
 require "fswatch"
 require "mosquito"
 
+Mosquito.configure do |settings|
+  settings.idle_wait = 10.seconds
+  settings.redis_url = "redis://localhost:6379/2"
+end
+
+Log.setup do |s|
+  backend = Log::IOBackend.new
+  # s.bind "redis.*", :trace, backend
+  s.bind "mosquito.*", :debug, backend
+end
+
 class SocketBroadcaster
   @outputs = [] of HTTP::WebSocket
 
@@ -39,10 +50,18 @@ class EventStream < SocketBroadcaster
         type: "list-queues",
         queues: Mosquito::Inspector.list_queues.map(&.name)
       }.to_json)
+
     when "list-overseers"
+
+    when %r|overseer\((.*)\)/executors|
+
+    when /executor\((.*)\)/
+      id = $~[1]
+      executor = Mosquito::Inspector.executor(id)
+
       socket.send({
-        type: "list-overseers",
-        overseers: Mosquito::Inspector.list_overseers.map(&.name)
+        type: "executor-detail",
+        executor: { id: id, current_job: executor.current_job }
       }.to_json)
     when /queue\((.*)\)/
       name = $~[1]
@@ -60,6 +79,50 @@ end
 
 get "/" do
   File.read("public/index.html")
+end
+
+get "/overseers" do
+  overseers = Mosquito::Inspector::Overseer.all
+  {
+    overseers: overseers.map(&.instance_id)
+  }.to_json
+end
+
+get "/overseers/:id" do |env|
+  id = env.params.url["id"]
+  overseer = Mosquito::Inspector::Overseer.new(id)
+  {
+    id: id,
+    last_active_at: overseer.last_heartbeat.to_s,
+  }.to_json
+end
+
+get "/overseers/:id/executors" do |env|
+  id = env.params.url["id"]
+  format_executor = ->(executor : Mosquito::Inspector::Executor) do
+    {
+      id: executor.instance_id,
+      current_job: executor.current_job,
+      current_job_queue: executor.current_job_queue
+    }
+  end
+
+  overseer = Mosquito::Inspector::Overseer.new(id)
+  {
+    id: id,
+    executors: overseer.executors.map(&format_executor)
+  }.to_json
+end
+
+get "/executors/:id" do |env|
+  id = env.params.url["id"]
+  executor = Mosquito::Inspector::Executor.new(id)
+  {
+    executor: {
+      id: id,
+      current_job: executor.current_job,
+    }
+  }.to_json
 end
 
 hot_reload = SocketBroadcaster.new

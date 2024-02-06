@@ -5,6 +5,7 @@ import Nest from './nest.js'
 
 export default class Overseer {
   static template = null
+
   static setTemplate(elem) {
     Overseer.template = elem
   }
@@ -35,6 +36,7 @@ export default class Overseer {
     this.busyExecutors = []
     this.element = null
     this.updateTimeout = null
+    this.lastActiveAt = null
   }
 
   appendTo(element) {
@@ -44,6 +46,7 @@ export default class Overseer {
 
     this.element = element.querySelector(`.overseer[data-id="${this.id}"]`)
     this.executorNest = new Nest(this.element.querySelector(".executors tbody"), Executor)
+    this.updateSummary()
   }
 
   updateSummary() {
