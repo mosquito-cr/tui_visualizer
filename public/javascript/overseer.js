@@ -33,7 +33,6 @@ export default class Overseer {
 
   constructor(overseerId) {
     this.id = overseerId
-    this.busyExecutors = []
     this.element = null
     this.updateTimeout = null
     this.lastActiveAt = null
@@ -51,10 +50,12 @@ export default class Overseer {
 
   updateSummary() {
     const executorCount = this.executorNest.count
+    const busyExecutorCount = Object.values(this.executorNest.hatchlings).filter(executor => executor.busy).length
+
     const summary = this.element.querySelector(".summary")
 
-    if (this.busyExecutors.length > 0)
-      summary.textContent = `${this.busyExecutors.length}/${executorCount} busy`
+    if (busyExecutorCount > 0)
+      summary.textContent = `${busyExecutorCount}/${executorCount} busy`
     else
       summary.textContent = `idle`
 
@@ -65,24 +66,15 @@ export default class Overseer {
   }
 
   executorMessage(executorId, message) {
-
     switch(message.event) {
       case "starting":
         clearTimeout(this.updateTimeout)
-
-        if (! this.busyExecutors.includes(executorId)) {
-          this.busyExecutors.push(executorId)
-          this.updateSummary()
-        }
+        this.updateSummary()
         break
 
       case "job-finished":
         clearTimeout(this.updateTimeout)
         this.updateTimeout = setTimeout(() => {
-          const index = this.busyExecutors.indexOf(executorId)
-
-          if (index > -1)
-            this.busyExecutors.splice(index, 1)
           this.updateSummary()
         }, 80)
         break

@@ -86,16 +86,19 @@ async function fetchOverseerExecutors(overseerId) {
   .then(response => response.json())
   .then(({executors}) => {
     executors.forEach(executor => {
-      const executorElement = overseerNest.findOrHatch(overseerId).executorNest.findOrHatch(executor.id)
-      if (executor.current_job != null) {
-        executorElement.spin = true
-        executorElement.job = executor.current_job
-        executorElement.queue = executor.current_job_queue
-        executorElement.progress = 100
-      } else {
-        executorElement.progress = 0
-      }
-      executorElement.updateStatus()
+      const overseer = overseerNest.findOrHatch(overseerId)
+
+      overseer
+        .executorNest
+        .findOrHatch(executor.id)
+        .setState({
+          progress: executor.current_job == null ? 0 : 100,
+          spin: true,
+          job: executor.current_job,
+          queue: executor.current_job_queue
+        })
+
+      overseer.updateSummary()
     })
   }).catch(error => console.error(error))
 }

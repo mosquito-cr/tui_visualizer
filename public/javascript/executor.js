@@ -102,4 +102,14 @@ export default class Executor {
       this.updateStatus()
     }, 40)
   }
+
+  setState({spin, progress, job, queue}) {
+    this.progress = progress
+    this.spin = spin
+    this.job = job
+    this.queue = queue
+
+    this.busy = job != null
+    this.updateStatus()
+  }
 }

@@ -48,7 +48,7 @@ class EventStream < SocketBroadcaster
     when "list-queues"
       socket.send({
         type: "list-queues",
-        queues: Mosquito::Inspector.list_queues.map(&.name)
+        queues: Mosquito::Api.list_queues.map(&.name)
       }.to_json)
 
     when "list-overseers"
@@ -57,7 +57,7 @@ class EventStream < SocketBroadcaster
 
     when /executor\((.*)\)/
       id = $~[1]
-      executor = Mosquito::Inspector.executor(id)
+      executor = Mosquito::Api.executor(id)
 
       socket.send({
         type: "executor-detail",
@@ -65,7 +65,7 @@ class EventStream < SocketBroadcaster
       }.to_json)
     when /queue\((.*)\)/
       name = $~[1]
-      queue = Mosquito::Inspector.queue(name)
+      queue = Mosquito::Api.queue(name)
 
       socket.send({
         type: "queue-detail",
@@ -82,7 +82,7 @@ get "/" do
 end
 
 get "/overseers" do
-  overseers = Mosquito::Inspector::Overseer.all
+  overseers = Mosquito::Api::Overseer.all
   {
     overseers: overseers.map(&.instance_id)
   }.to_json
@@ -90,7 +90,7 @@ end
 
 get "/overseers/:id" do |env|
   id = env.params.url["id"]
-  overseer = Mosquito::Inspector::Overseer.new(id)
+  overseer = Mosquito::Api::Overseer.new(id)
   {
     id: id,
     last_active_at: overseer.last_heartbeat.to_s,
@@ -99,7 +99,7 @@ end
 
 get "/overseers/:id/executors" do |env|
   id = env.params.url["id"]
-  format_executor = ->(executor : Mosquito::Inspector::Executor) do
+  format_executor = ->(executor : Mosquito::Api::Executor) do
     {
       id: executor.instance_id,
       current_job: executor.current_job,
@@ -107,7 +107,7 @@ get "/overseers/:id/executors" do |env|
     }
   end
 
-  overseer = Mosquito::Inspector::Overseer.new(id)
+  overseer = Mosquito::Api::Overseer.new(id)
   {
     id: id,
     executors: overseer.executors.map(&format_executor)
@@ -116,7 +116,7 @@ end
 
 get "/executors/:id" do |env|
   id = env.params.url["id"]
-  executor = Mosquito::Inspector::Executor.new(id)
+  executor = Mosquito::Api::Executor.new(id)
   {
     executor: {
       id: id,
@@ -136,7 +136,7 @@ ws "/hot-reload" do |socket|
   hot_reload.register socket
 end
 
-event_stream = Mosquito::Inspector.event_receiver
+event_stream = Mosquito::Api.event_receiver
 event_stream_clients = EventStream.new
 
 def message_formatter(broadcast : Mosquito::Backend::BroadcastMessage) : String
