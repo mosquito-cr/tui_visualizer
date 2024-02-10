@@ -2,13 +2,16 @@
 
 export default class Executor {
   static animationFrameLength = 50 // ms
-  static template = null
-  static setTemplate(elem) {
-    this.template = elem
+  static template() {
+    return document.querySelector("template#executor").content.cloneNode(true)
+  }
+
+  static linkTemplate() {
+    return document.querySelector("template#executor-link").content.cloneNode(true)
   }
 
   appendTo(element) {
-    const template = Executor.template.content.cloneNode(true)
+    const template = Executor.template()
     template.querySelector(".executor-row").dataset.id = this.id
     template.querySelector(".progress-row").dataset.id = this.id
 
@@ -70,7 +73,11 @@ export default class Executor {
 
   updateStatus() {
     if (this.job) {
-      this.detailsRow.querySelector(".working-on").textContent = this.queue + ": " + this.job
+      const template = Executor.linkTemplate()
+      template.querySelector("a").textContent = this.job
+      template.querySelector("a").href = `/job_run/${this.job}`
+      this.detailsRow.querySelector(".working-on").textContent = ""
+      this.detailsRow.querySelector(".working-on").appendChild(template)
     } else   {
       this.detailsRow.querySelector(".working-on").textContent = "idle"
     }

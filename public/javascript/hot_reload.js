@@ -66,5 +66,6 @@ class HotReloader {
   }
 }
 
-const HotReload = (path) => new HotReloader(path)
-export default HotReload
+export const HotReload = (path) => new HotReloader(path)
+
+HotReload("ws://localhost:3000/hot-reload")

@@ -82,10 +82,10 @@ class EveryThreeSecondsJob < Mosquito::PeriodicJob
 end
 
 class RandomLengthJob < Mosquito::QueuedJob
+  param length : Int32 = 10
   def perform
-    length_of_time = Random.rand(10)
-    log "running for #{length_of_time} seconds"
-    sleep length_of_time
+    log "running for #{length} seconds"
+    sleep length
   end
 end
 
@@ -118,7 +118,7 @@ loop do
   case choice.chomp
   when "1"
     puts "Enqueuing 100 random length jobs."
-    100.times { RandomLengthJob.new.enqueue }
+    100.times { RandomLengthJob.new(length: Random.rand(10)).enqueue }
 
   when "2"
     puts "Enqueuing 100_000 fast jobs."

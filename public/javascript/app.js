@@ -12,107 +12,36 @@
 //   - how many times the job is enqueued
 // - when an overseer exits, it should be removed from the list
 
-import HotReload from "./hot_reload.js"
-HotReload("ws://localhost:3000/hot-reload")
+// import Queue from "./components/queue/queue.js"
+// import QueueList from "./components/queue-list/queue-list.js"
+// import MessageStream from "./components/message-stream/message-stream.js"
+// const messageStream = document.querySelector("mosquito-message-stream")
 
-import Builder from "./lib/builder.js"
+// const queueList = document.querySelector("mosquito-queue-list")
 
-import EventStream from "./event_stream.js"
-import TabManager from "./tabs.js"
+// const eventStream = new EventStream("ws://localhost:3000/events")
 
-import Nest from "./nest.js"
-import Queue from "./components/queue/queue.js"
-import QueueList from "./components/queue-list/queue-list.js"
-import Overseer from "./overseer.js"
-import Executor from "./executor.js"
-import MessageStream from "./components/message-stream/message-stream.js"
+// eventStream.on("list-queues", queues => {
+//   queueList.update(queues)
+//   queues.forEach(queue_name => eventStream.queueDetail(queue_name))
+// })
 
-const messageStream = document.querySelector("mosquito-message-stream")
-const overseerNest = new Nest(document.querySelector("#overseers"), Overseer)
-Overseer.setTemplate(document.querySelector("template#overseer"))
-Executor.setTemplate(document.querySelector("template#executor"))
+// eventStream.on("list-overseers", overseers => {
+//   overseers.forEach(overseerId => {
+//     overseerNest.findOrHatch(overseerId)
+//   })
+// })
 
-const queueList = document.querySelector("mosquito-queue-list")
+// eventStream.on("queue-detail", message => {
+//   queueList.updateDetails(message.queue.name, message.queue)
+// })
 
-const eventStream = new EventStream("ws://localhost:3000/events")
 
-eventStream.on("list-queues", queues => {
-  queueList.update(queues)
-  queues.forEach(queue_name => eventStream.queueDetail(queue_name))
-})
+// // eventStream.on("message", message => messageStream.messageReceived(message))
 
-eventStream.on("list-overseers", overseers => {
-  overseers.forEach(overseerId => {
-    overseerNest.findOrHatch(overseerId)
-  })
-})
+// function dispatchQueueMessage(channel, message) {
+//   const queueName = channel[2]
+//   queueList.dispatchMessage(queueName, message)
+// }
 
-// eventStream.on("message", message => messageStream.messageReceived(message))
 
-eventStream.on("queue-detail", message => {
-  queueList.updateDetails(message.queue.name, message.queue)
-})
-
-eventStream.on("broadcast", event => {
-  const parts = event.channel.split(":")
-  switch (parts[1]) {
-    case "overseer":
-      overseerNest.findOrHatch(parts[2]).onMessage(parts, event.message)
-      break
-    case "queue":
-      dispatchQueueMessage(parts, event.message)
-      break
-  }
-})
-
-function dispatchQueueMessage(channel, message) {
-  const queueName = channel[2]
-  queueList.dispatchMessage(queueName, message)
-}
-
-async function fetchOverseers() {
-  fetch("/overseers")
-  .then(response => response.json())
-  .then(({overseers}) => {
-    overseers.forEach(overseerId => {
-      overseerNest.findOrHatch(overseerId)
-      fetchOverseerExecutors(overseerId)
-    })
-  }).catch(error => console.error(error))
-}
-
-async function fetchOverseerExecutors(overseerId) {
-  fetch(`/overseers/${overseerId}/executors`)
-  .then(response => response.json())
-  .then(({executors}) => {
-    executors.forEach(executor => {
-      const overseer = overseerNest.findOrHatch(overseerId)
-
-      overseer
-        .executorNest
-        .findOrHatch(executor.id)
-        .setState({
-          progress: executor.current_job == null ? 0 : 100,
-          spin: true,
-          job: executor.current_job,
-          queue: executor.current_job_queue
-        })
-
-      overseer.updateSummary()
-    })
-  }).catch(error => console.error(error))
-}
-
-function go() {
-  const tabs = document.querySelector("#tabs")
-  const tabContent = document.querySelector("#tab-content")
-  const rootTabs = new TabManager(tabs, tabContent)
-  rootTabs.manageHistory = true
-
-  fetchOverseers()
-}
-
-if (document.readyState === "loading")
-  document.addEventListener("DOMContentLoaded", go)
-else
-  go()

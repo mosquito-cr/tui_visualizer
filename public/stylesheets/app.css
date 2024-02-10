@@ -20,8 +20,9 @@ body {
   font-family: sans-serif;
 }
 
-mosquito-message-stream {
-  height: 56vh;
+#content {
+  padding: 1rem;
+  border: 1px solid #dddddd;
 }
 
 #tabs {
@@ -41,23 +42,9 @@ mosquito-message-stream {
   color: var(--background-color);
 }
 
-#tabs .active {
+#tabs .current-tab-true {
   color: white;
   color: var(--background-color);
   background-color: var(--active-tab-color);
 }
 
-#tab-content {
-  display: flex;
-  border: 1px solid #dddddd;
-}
-
-#tab-content > * {
-  display: none;
-  width: 100%;
-  margin: 1rem;
-}
-
-#tab-content .active {
-  display: block;
-}
