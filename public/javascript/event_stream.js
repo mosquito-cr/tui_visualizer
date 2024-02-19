@@ -28,6 +28,7 @@ export default class EventStream {
   }
 
   routeMessage(message) {
+    console.log(message)
     switch (message.type) {
       case "broadcast":
         this.dispatchCallbacks("broadcast", message)
@@ -55,7 +56,6 @@ export default class EventStream {
   }
 
   dispatchCallbacks(eventName, payload) {
-    // console.log(`dispatching callbacks for ${eventName}`)
     if (! this.callbacks[eventName]) return
     this.callbacks[eventName].forEach(callback => callback(payload))
   }
