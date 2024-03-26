@@ -1,7 +1,5 @@
-name: mosquito_monitor
+name: mosquito_inspector
 version: 0.1.0
-
-crystal: 1.9.2
 
 dependencies:
   mosquito:

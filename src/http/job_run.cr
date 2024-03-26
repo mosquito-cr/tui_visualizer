@@ -6,5 +6,5 @@ get "/job_run/:id" do |env|
     env.response.status = HTTP::Status::UNAUTHORIZED
   end
 
-  render "src/views/job.html.ecr", "src/views/layout.html.ecr"
+  Mosquito::InspectWeb.render "src/views/job.html.ecr"
 end
