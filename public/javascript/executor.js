@@ -22,6 +22,16 @@ export default class Executor {
     this.detailsRow.querySelector(".executor-id").textContent = this.id
   }
 
+  blinkAndRemove() {
+    this.detailsRow.classList.add("blink")
+    setTimeout(this.remove.bind(this), 3000)
+  }
+
+  remove() {
+    this.detailsRow.remove()
+    this.progressRow.remove()
+  }
+
   constructor(executorId) {
     this.id = executorId
     this.timeout = null

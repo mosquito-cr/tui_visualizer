@@ -15,7 +15,7 @@
 #
 # For an application which disposes of and recreates fibers, 
 # this will leak memory because there's no way to remove the
-# instances which are created for fibers which on longer exist.
+# instances which are created for fibers which no longer exist.
 #
 class Current
   # Fiber-local singleton.

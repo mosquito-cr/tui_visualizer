@@ -15,7 +15,10 @@ end
 require "./http/overseers"
 require "./http/queues"
 require "./http/events"
+require "./http/job_run"
 require "./http/hot_reload"
+require "./api/executors"
+require "./api/overseers"
 
 before_all do
   Current.reset

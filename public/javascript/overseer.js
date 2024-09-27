@@ -11,9 +11,11 @@ export default class Overseer {
   }
 
   onMessage(channel, message) {
+    this.lastMessageReceivedAt = (new Date()).getTime()
+
     // overseer message
     if (channel.length == 3) {
-      console.log(message)
+      this.overseerMessage(message)
       return
     }
 
@@ -31,11 +33,34 @@ export default class Overseer {
     }
   }
 
+  overseerMessage(message) {
+    switch(message.event) {
+      case "coordinating":
+        this.setCoordinatingFlag(true)
+        break
+      case "stopping-coordinating":
+        this.setCoordinatingFlag(false)
+        break
+      case "executor-died":
+        // { event: "executor-died", executor: "b795db84445aae99" }
+        const executor = this.executorNest.findAndRemove(message.executor)
+        if (executor)
+          executor.blinkAndRemove()
+        break
+      default:
+        console.error(`Unknown overseer message`, message)
+    }
+  }
+
   constructor(overseerId) {
     this.id = overseerId
     this.element = null
     this.updateTimeout = null
     this.lastActiveAt = null
+    this.fetchExecutors()
+    this.lastMessageReceivedAt = (new Date()).getTime()
+
+    this.updateSelfTicker = setInterval(this.fetchSelfIfIdle.bind(this), 2000)
   }
 
   appendTo(element) {
@@ -62,7 +87,10 @@ export default class Overseer {
     if (summary.classList.contains('hidden'))
       summary.classList.remove('hidden')
 
-    this.element.querySelector('.overseer-id').textContent = `Overseer<${this.id.slice(-6)}>`
+    // const isInactive = this.lastActiveAt < (new Date()).getTime() - 5000
+    // this.element.classList.toggle('inactive', isInactive)
+
+    this.element.querySelector('.overseer-id').textContent = `<${this.id.slice(-6)}>`
   }
 
   executorMessage(executorId, message) {
@@ -79,5 +107,40 @@ export default class Overseer {
         }, 80)
         break
     }
+  }
+
+  fetchSelfIfIdle() {
+    let now = (new Date()).getTime()
+    if (this.lastMessageReceivedAt < now - 5000) {
+      this.fetchSelf().then(this.updateSummary.bind(this))
+      this.lastMessageReceivedAt = now
+    }
+  }
+
+  async fetchSelf() {
+    fetch(`/api/overseers/${this.id}`)
+    .then(response => response.json())
+    .then((overseer) => {
+      this.lastActiveAt = overseer.last_active_at
+    }).catch(error => console.error(error))
+  }
+
+  async fetchExecutors() {
+    fetch(`/api/overseers/${this.id}/executors`)
+    .then(response => response.json())
+    .then(({executors}) => {
+      executors.forEach(executor => {
+        this
+          .executorNest
+          .findOrHatch(executor.id)
+          .setState({
+            progress: executor.current_job == null ? 0 : 100,
+            spin: true,
+            job: executor.current_job,
+            queue: executor.current_job_queue
+          })
+      })
+      this.updateSummary()
+    }).catch(error => console.error(error))
   }
 }

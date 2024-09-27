@@ -4,6 +4,7 @@
   --active-tab-color: #666666;
   --primary-color: #465298;
   --secondary-color: #7a89ef;
+  --link-color: #465298;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -11,6 +12,7 @@
     --background-color: #333333;
     --text-color: #dddddd;
     --active-tab-color: #dddddd;
+    --link-color: #7a89ef;
   }
 }
 
@@ -18,6 +20,14 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
   font-family: sans-serif;
+}
+
+a {
+  color: var(--link-color);
+}
+
+span {
+  margin: 0;
 }
 
 #content {
@@ -48,3 +58,6 @@ body {
   background-color: var(--active-tab-color);
 }
 
+.hidden {
+  display: none;
+}

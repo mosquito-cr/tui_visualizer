@@ -17,4 +17,12 @@ export default class Nest {
     this.count ++
     return hatchling
   }
+
+  findAndRemove(id) {
+    let hatchling = this.hatchlings[id]
+    if (! hatchling) return
+    this.count --
+    delete this.hatchlings[id]
+    return hatchling
+  }
 }

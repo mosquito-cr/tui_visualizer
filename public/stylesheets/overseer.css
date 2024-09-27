@@ -3,9 +3,22 @@
   width: 100%;
 }
 
-.overseer > h3 {
-  display: flex;
-  gap: 1rem;
+.overseer.inactive .missing {
+  display: inline;
+}
+
+.overseer.inactive .executors {
+  display: none;
+}
+
+.chip {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.25rem;
+}
+
+.overseer-id {
+  color: #c0c0c0;
 }
 
 .overseer table.executors {
@@ -25,6 +38,20 @@ table.excecutors tbody tr:nth-child(even of .executor-row) {
 
 .executor-id {
   width: 20%;
+}
+
+tr.executor-row.blink {
+  background-color: #b03322;
+  animation: blink 3s infinite both;
+}
+@keyframes blink {
+  0%, 20%, 40%, 60%, 80% {
+    opacity: 1;
+  }
+
+  10%, 30%, 50%, 70%, 90% {
+    opacity: 0;
+  }
 }
 
 tr.progress-row td {
