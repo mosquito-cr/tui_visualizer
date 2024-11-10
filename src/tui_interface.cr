@@ -5,16 +5,16 @@
 # └───┘
 
 require "keimeno"
-require "./interface/*"
+require "./tui_interface/*"
 
 class MosquitoInterface < Keimeno::Base
-  @queues : Array(Mosquito::Inspector::Queue)
+  @queues : Array(Mosquito::Observability::Queue)
   @last_update : Time
 
   def initialize
     @full_screen = true
-    @queues = [] of Mosquito::Inspector::Queue
-    @runners = [] of Mosquito::Inspector::Runner
+    @queues = [] of Mosquito::Observability::Queue
+    @runners = [] of Mosquito::Observability::Runner
     @last_update = Time::UNIX_EPOCH
   end
 
@@ -28,11 +28,11 @@ class MosquitoInterface < Keimeno::Base
     if dwell > INTERVAL
       @last_update = now
 
-      Mosquito::Inspector.list_queues
+      Mosquito::Observability.list_queues
         .reject { |q| @queues.includes? q }
         .each { |q| @queues.push q }
 
-      Mosquito::Inspector.list_runners
+      Mosquito::Observability.list_runners
         .reject { |runner| @runners.includes? runner }
         .each { |runner| @runners.push runner }
     else
@@ -63,7 +63,7 @@ class MosquitoInterface < Keimeno::Base
       s
     end
 
-      # tasks = [] of Mosquito::Inspector::Task
+      # tasks = [] of Mosquito::Observability::Task
 
 
       # last_index = tasks.size - 1

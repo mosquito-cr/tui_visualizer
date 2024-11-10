@@ -1,9 +1,10 @@
 require "mosquito"
 
 Mosquito.configure do |settings|
-  settings.redis_url = (ENV["REDIS_URL"]? || "redis://localhost:6379")
+  settings.redis_url = (ENV["REDIS_URL"]? || "redis://localhost:6379/2")
   settings.run_cron_scheduler = false
   settings.use_distributed_lock = true
+  settings.send_metrics = true
 end
 
 struct InteractiveLogStreamFormatter < Log::StaticFormatter
@@ -13,14 +14,18 @@ struct InteractiveLogStreamFormatter < Log::StaticFormatter
     source
     string " "
     message
+    string " "
+    data
   end
 end
 
 formatted_backend = Log::IOBackend.new(formatter: InteractiveLogStreamFormatter)
 
-Log.setup(:debug, formatted_backend)
-Log.setup("redis.connection.*", :warn, formatted_backend)
-Log.setup("mosquito.*", :info, formatted_backend)
+Log.setup do |logger|
+  logger.bind "*",:info, formatted_backend
+  # logger.bind "redis.connection.*", :info, formatted_backend
+  logger.bind "mosquito.redis_backend", :debug, formatted_backend
+end
 
 class ShortLivedRunner < Mosquito::Runner
   @run_start : Time = Time::UNIX_EPOCH
@@ -62,8 +67,8 @@ end
 
 class LongJob < Mosquito::QueuedJob
   def perform
-    log "It only takes me 1 second to do this"
-    sleep 1
+    log "It only takes me 3 second to do this"
+    sleep 3
   end
 end
 
@@ -76,16 +81,30 @@ class EveryThreeSecondsJob < Mosquito::PeriodicJob
   end
 end
 
+class RandomLengthJob < Mosquito::QueuedJob
+  param length : Int32 = 10
+  def perform
+    log "running for #{length} seconds"
+    sleep length
+  end
+end
+
+class FastJob < Mosquito::QueuedJob
+  def perform
+    log "I'm running fast"
+  end
+end
+
 cli_arg = ARGV[0]?
 
 loop do
-  count = 10
+  count = 1000
   duration = 3.seconds
 
   print <<-MENU
-  1. Enqueue a job
-  2. Run worker for #{duration.seconds} seconds
-  3. Enqueue #{count} jobs
+  1. Enqueue 100 random length jobs (1-10s ea)
+  2. 100_000 fast jobs (~instantaneous)
+  3. Enqueue #{count} long jobs
   4. Run worker indefinitely
 
   Choose: 
@@ -98,22 +117,16 @@ loop do
 
   case choice.chomp
   when "1"
-    puts "Enqueuing a three second job."
-    LongJob.new.enqueue
+    puts "Enqueuing 100 random length jobs."
+    100.times { RandomLengthJob.new(length: Random.rand(10)).enqueue }
 
   when "2"
-    puts "Running worker for #{duration.seconds} seconds."
-
-    runner = ShortLivedRunner.new
-    runner.run_forever = false
-    runner.run_duration = duration
-    runner.start
+    puts "Enqueuing 100_000 fast jobs."
+    100_000.times { FastJob.new.enqueue }
 
   when "3"
     puts "Enqueuing #{count} jobs."
-    count.times do
-      LongJob.new.enqueue
-    end
+    count.times { LongJob.new.enqueue }
 
   when "4"
     puts "Running worker indefinitely."

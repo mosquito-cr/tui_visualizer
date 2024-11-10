@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# brew install watchexec
+watchexec \
+  --filter '*.ecr' \
+  --filter '*.cr' \
+  -r crystal run web_interface.cr
